@@ -15,25 +15,25 @@ cd Live-Everything
 
 ```mermaid
 flowchart LR
-  subgraph Browser["浏览器 web/"]
-    Cam[摄像头 + Canvas]
-    YOLO[@xenova/transformers ONNX WASM]
-    UI[React 面板 · 录音 · Markdown 答复]
+  subgraph Browser["浏览器 web"]
+    Cam["摄像头与 Canvas"]
+    YOLO["ONNX WASM YOLO"]
+    UI["React 语音与 Markdown"]
   end
-  subgraph Agent["Python agent/"]
-    API[FastAPI REST / WebSocket]
-    STT[Whisper STT]
-    RAG[Chroma RAG]
-    LLM[DeepSeek / Ollama / …]
-    Web[可选联网检索]
+  subgraph Agent["Python agent"]
+    API["FastAPI"]
+    STT["Whisper STT"]
+    RAG["Chroma RAG"]
+    LLM["DeepSeek 等 LLM"]
+    Web["联网检索"]
   end
-  subgraph Data["仓库 data/"]
-    KB[(knowledge-base/*.json)]
-    Vec[(.chroma 向量索引)]
+  subgraph Data["仓库 data"]
+    KB["knowledge-base JSON"]
+    Vec["Chroma 向量索引"]
   end
   Cam --> YOLO
   YOLO --> UI
-  UI -->|HTTP /api · /ws| API
+  UI -->|REST 与 WS| API
   API --> STT
   API --> RAG
   API --> LLM
@@ -95,10 +95,10 @@ Live-Everything/
 
 ### 安装
 
-**Conda（示例：`eyes_detection`）**
+**Conda**
 
 ```powershell
-conda activate eyes_detection
+conda activate ...
 cd agent
 python -m pip install -U pip
 pip install -e .
@@ -147,7 +147,7 @@ npm run dev
 
 ---
 
-## 知识与 RAG（简要）
+## 知识与 RAG
 
 - 定制商品：在 **`data/knowledge-base/products/custom/`** 放置 `<product_id>.json`，并在 **`config/label_mapping.json`** 中为检测标签建立映射。
 - 向量索引目录：**`data/.chroma/`**。默认启动会对比 **`data/.rag_source_fingerprint`** 与知识文件哈希，若源未变且索引已有数据则跳过全量 ingest；修改 JSON 后可 **`POST /api/rag/ingest/reload`**，或暂时关闭跳过策略见 `.env`。
