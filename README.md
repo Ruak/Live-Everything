@@ -2,6 +2,8 @@
 
 面向线下陈列与讲解场景的 **AR 商品讲解**：摄像头实时检测物体 → 命中知识库弹出信息面板 → 语音提问 → **Whisper 本地转写** + **DeepSeek（或其他 LLM）生成回答**，本地知识不足时可 **联网检索** 兜底。
 
+![Live Everything](./display.png)
+
 **源码仓库：** [github.com/Ruak/Live-Everything](https://github.com/Ruak/Live-Everything)
 
 ```bash
