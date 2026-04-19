@@ -282,6 +282,17 @@ html, body, #root {
   margin-bottom: 10px;
 }
 
+/* Markdown 问答：避免继承 body 默认黑字；列表「紧格式」下文字挂在 li 内无 <p> 包裹 */
+.answer-markdown {
+  color: rgba(233, 250, 255, 0.88);
+}
+.answer-markdown li {
+  color: rgba(233, 250, 255, 0.88);
+}
+.answer-markdown li::marker {
+  color: rgba(0, 255, 225, 0.55);
+}
+
 /* ==========================================================
  *  录音按钮
  * ========================================================== */

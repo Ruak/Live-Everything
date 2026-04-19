@@ -6,7 +6,7 @@ import asyncio
 import json
 import logging
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from .. import config
 from ..models.agent import AgentConfig, AgentState, AgentSummary
@@ -314,11 +314,6 @@ class AgentManager:
             return self.ingestor.ingest_raw_text(text, product_id, source, category)
         return 0
 
-    def ingest_knowledge_dir(self) -> dict:
-        if self.ingestor:
-            return self.ingestor.ingest_directory()
-        return {"products": [], "categories": [], "fallbacks": [], "total_chunks": 0}
-
     def ingest_rich_kb(self) -> dict:
         """Ingest the structured rich knowledge base (products, categories, fallback) into RAG."""
         if self.ingestor:
@@ -398,12 +393,12 @@ class AgentManager:
 
     def resolve_detection_label(
         self,
-        detection_id: int | str | None = None,
+        detection_id: Optional[Union[int, str]] = None,
         label_en: str = "",
     ) -> dict:
         """Resolve a YOLO detection ID or English label to knowledge target info.
         Returns dict with keys: product_id, semantic_category_id, object_label, zh, en, baike_query."""
-        entry: dict | None = None
+        entry: Optional[dict] = None
 
         # Try by detection_id first
         if detection_id is not None:
@@ -438,9 +433,6 @@ class AgentManager:
     def get_label_mapping(self) -> Dict[str, dict]:
         """Return the full label mapping dict."""
         return dict(self._label_mapping)
-
-    def load_rich_knowledge_dir(self) -> list[str]:
-        return self.rich_knowledge.load_all_from_dir()
 
     async def health(self) -> dict:
         llm_ok = await self.llm.health_check()

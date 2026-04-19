@@ -2,7 +2,7 @@
 name = "agent"
 version = "0.1.0"
 description = "AR商品讲解系统 — Agent服务"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
     "fastapi>=0.111.0",
     "uvicorn[standard]>=0.29.0",

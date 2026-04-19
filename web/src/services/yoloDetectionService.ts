@@ -3,7 +3,7 @@ import {
   AutoModel,
   AutoProcessor,
   RawImage,
-} from '@huggingface/transformers';
+} from '@xenova/transformers';
 import type { DetectionResult, DetectionService } from '../types/detection';
 
 /**
@@ -148,11 +148,12 @@ export class YoloDetectionService implements DetectionService {
        */
       // @huggingface/transformers 用 `dtype` 指定权重精度：'q8' → model_quantized.onnx, 'fp16' → model_fp16.onnx
       const dtype = this.onnxVariant === 'fp16' ? 'fp16' : 'q8';
+      // Xenova 运行时需要 dtype 选择 q8/fp16 ONNX；类型定义未收录该字段
       this.model = await AutoModel.from_pretrained(LOCAL_MODEL_ID, {
         local_files_only: true,
         model_file_name: 'model',
         dtype,
-      });
+      } as Parameters<typeof AutoModel.from_pretrained>[1]);
       this.processor = await AutoProcessor.from_pretrained(LOCAL_MODEL_ID, {
         local_files_only: true,
       });

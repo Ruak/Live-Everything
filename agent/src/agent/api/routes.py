@@ -9,6 +9,7 @@ from pydantic import BaseModel, model_validator
 
 from ..core.agent_manager import AgentManager
 from ..core.knowledge_base import fallback_collection_id, semantic_collection_id
+from ..core.rag.startup_ingest import write_rag_source_fingerprint
 from ..models.agent import AgentConfig
 
 router = APIRouter(prefix="/api", tags=["agents"])
@@ -251,9 +252,15 @@ async def rag_ingest_text(req: IngestTextRequest):
 
 @router.post("/rag/ingest/reload")
 async def rag_ingest_reload():
-    manager.load_rich_knowledge_dir()
-    result = manager.ingest_knowledge_dir()
-    return {"status": "reloaded", **result}
+    """重新加载 JSON 到内存并全量 ingest knowledge-base → 向量库，更新指纹。"""
+    rich_summary = manager.load_rich_knowledge_base()
+    rich_rag = manager.ingest_rich_kb()
+    write_rag_source_fingerprint()
+    return {
+        "status": "reloaded",
+        "rich_kb_loaded": rich_summary,
+        "ingest_rich_kb": rich_rag,
+    }
 
 
 @router.post("/rag/query")

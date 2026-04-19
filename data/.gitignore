@@ -1,0 +1,3 @@
+# Chroma 向量库与 ingest 指纹（可由启动或 POST /api/rag/ingest/reload 生成）
+.chroma/
+.rag_source_fingerprint

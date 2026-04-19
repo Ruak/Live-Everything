@@ -8,6 +8,10 @@ from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.agent_manager import AgentManager
+from .core.rag.startup_ingest import (
+    should_skip_startup_rag_ingest,
+    write_rag_source_fingerprint,
+)
 from .api.routes import router as api_router, set_manager
 from .api.websocket import websocket_endpoint
 from . import config
@@ -26,7 +30,7 @@ async def lifespan(app: FastAPI):
     # ── Startup ─────────────────────────────────────────────
     set_manager(agent_manager)
 
-    # Load keyword knowledge from data/ directory
+    # 关键字词条：与 knowledge-base/products/custom 同源
     loaded = agent_manager.knowledge_store.load_all_from_dir()
     logger.info("Loaded keyword knowledge for %d products: %s", len(loaded), loaded)
 
@@ -34,15 +38,22 @@ async def lifespan(app: FastAPI):
     rich_summary = agent_manager.load_rich_knowledge_base()
     logger.info("Rich KB: %s", rich_summary)
 
-    # Ingest into RAG vector store
-    if config.RAG_ENABLED:
-        # Ingest from data/knowledge/ directory (legacy)
-        rag_result = agent_manager.ingest_knowledge_dir()
-        logger.info("RAG ingestion (knowledge dir): %s", rag_result)
-
-        # Ingest structured rich KB (products, categories, fallback)
-        rich_rag = agent_manager.ingest_rich_kb()
-        logger.info("RAG ingestion (rich KB): %s", rich_rag)
+    # RAG：向量在仓库 data/.chroma；源未变时可跳过重复 ingest
+    if config.RAG_ENABLED and config.RAG_INGEST_ON_STARTUP:
+        skip, reason = should_skip_startup_rag_ingest()
+        if skip:
+            logger.info("RAG startup ingest skipped (%s)", reason)
+        else:
+            if reason:
+                logger.info("RAG startup ingest: %s", reason)
+            rich_rag = agent_manager.ingest_rich_kb()
+            logger.info("RAG ingestion (knowledge-base): %s", rich_rag)
+            write_rag_source_fingerprint()
+    elif config.RAG_ENABLED:
+        logger.info(
+            "RAG startup ingest disabled (RAG_INGEST_ON_STARTUP=false); index at %s",
+            config.RAG_PERSIST_DIR,
+        )
 
     health = await agent_manager.health()
     logger.info("System health: %s", health)

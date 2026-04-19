@@ -2,7 +2,7 @@
 
 import re
 import logging
-from typing import List
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 
 from ... import config
@@ -40,7 +40,7 @@ class Chunker:
         text: str,
         source: str = "",
         category: str = "general",
-        metadata: dict | None = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> List[Chunk]:
         """Split plain text into overlapping chunks."""
         if not text or not text.strip():
@@ -102,7 +102,7 @@ class Chunker:
         self,
         text: str,
         source: str = "",
-        metadata: dict | None = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> List[Chunk]:
         """Split markdown by headings, then chunk each section."""
         # Split on headings (# ## ### etc.)

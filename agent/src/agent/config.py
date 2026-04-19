@@ -9,8 +9,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # agent/ project root
-DATA_DIR = BASE_DIR / "data"
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # agent/ 包根（含 pyproject）
+REPO_ROOT = BASE_DIR.parent  # 仓库 live-everything/
+# 向量库与知识 JSON 统一放在仓库 data/（与 web/vite 引用的 knowledge-base 同级）
+REPO_DATA_DIR = REPO_ROOT / "data"
 
 # ── 加载 .env（在引用任何 env 前做） ────────────────────────────
 try:
@@ -75,20 +77,26 @@ DEFAULT_SYSTEM_PROMPT = (
     "请优先使用【当前物体专属知识】与【同类通用知识】作答，"
     "若本地知识不足，再参考【联网补充知识】；引用联网结果时请明示来源并保持克制。"
     "回答要简洁、准确、有吸引力，不要编造参数、价格或型号。"
+    "交互界面侧栏已展示商品名称与简介，请勿在回答开头重复自我介绍或复述完整产品名；直接切入用户问题。"
+    "可使用 Markdown（**加粗**、分段、`-` 列表）便于阅读。"
 )
 
 # ── RAG ─────────────────────────────────────────────────────────
 RAG_ENABLED = _env_bool("RAG_ENABLED", True)
-RAG_PERSIST_DIR = DATA_DIR / ".chroma"
+# 是否在启动时执行 ingest（仍会结合指纹尽可能跳过重复计算）
+RAG_INGEST_ON_STARTUP = _env_bool("RAG_INGEST_ON_STARTUP", True)
+# 源 JSON 未变更且 REPO_DATA_DIR/.chroma 已有数据时跳过 ingest；设 false 则每次启动都跑 ingest（upsert）
+RAG_SKIP_IF_SOURCES_UNCHANGED = _env_bool("RAG_SKIP_IF_SOURCES_UNCHANGED", True)
+RAG_PERSIST_DIR = REPO_DATA_DIR / ".chroma"
+RAG_FINGERPRINT_FILE = REPO_DATA_DIR / ".rag_source_fingerprint"
 RAG_COLLECTION_PREFIX = _env("RAG_COLLECTION_PREFIX", "product_")
 RAG_CHUNK_SIZE = _env_int("RAG_CHUNK_SIZE", 300)
 RAG_CHUNK_OVERLAP = _env_int("RAG_CHUNK_OVERLAP", 50)
 RAG_TOP_K = _env_int("RAG_TOP_K", 5)
 RAG_SCORE_THRESHOLD = float(_env("RAG_SCORE_THRESHOLD") or 1.5)
-KNOWLEDGE_DIR = DATA_DIR / "knowledge"
 
-# ── Rich Knowledge Base ────────────────────────────────────────
-KNOWLEDGE_BASE_DIR = BASE_DIR.parent / "data" / "knowledge-base"
+# ── Rich Knowledge Base（JSON 源均在此目录下）──────────────────
+KNOWLEDGE_BASE_DIR = REPO_DATA_DIR / "knowledge-base"
 KB_CONFIG_DIR = KNOWLEDGE_BASE_DIR / "config"
 KB_CUSTOM_PRODUCTS_DIR = KNOWLEDGE_BASE_DIR / "products" / "custom"
 KB_GENERIC_PRODUCTS_DIR = KNOWLEDGE_BASE_DIR / "products" / "generic"

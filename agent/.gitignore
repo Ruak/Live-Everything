@@ -8,4 +8,4 @@ venv/
 dist/
 build/
 .python-version
-data/.chroma/
+# 向量与指纹已迁至仓库根目录 data/（见 ../data/.gitignore）

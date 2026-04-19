@@ -61,6 +61,7 @@ export function VoiceButton() {
             ? '语音服务未连接。请确认 Agent 后端已启动（默认 http://localhost:8000）。'
             : '未能识别到语音内容，请靠近麦克风再试一次。';
           setCurrentAnswer(fallback);
+          addQA('（未识别到语音）', fallback);
           transition('AnswerDisplayed');
           return;
         }
@@ -75,7 +76,9 @@ export function VoiceButton() {
         transition('AnswerDisplayed');
       } catch (err) {
         console.error('[voice] 后端语音问答失败', err);
-        setCurrentAnswer('语音服务暂不可用，请稍后重试。');
+        const msg = '语音服务暂不可用，请稍后重试。';
+        setCurrentAnswer(msg);
+        addQA('（请求失败）', msg);
         transition('AnswerDisplayed');
       }
     },

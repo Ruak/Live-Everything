@@ -9,8 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional
 
-from .. import config
-
 logger = logging.getLogger(__name__)
 
 SEMANTIC_COLLECTION_PREFIX = "semantic__"
@@ -91,17 +89,6 @@ class RichKnowledgeBase:
             len(self.semantic_categories),
         )
         return True
-
-    def load_all_from_dir(self, directory: Optional[Path] = None) -> list[str]:
-        loaded: list[str] = []
-        d = directory or config.KNOWLEDGE_DIR
-        if not d.exists():
-            return loaded
-
-        for path in sorted(d.glob("*.json")):
-            if self.load_from_file(path):
-                loaded.append(str(path))
-        return loaded
 
     def load_from_dict(self, data: dict) -> None:
         for product in data.get("products", []):

@@ -2,11 +2,11 @@ import { useCallback } from 'react';
 import { X, Sparkles, Target, Gauge, Users, Play, Lightbulb } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { VoiceButton } from './VoiceButton';
+import { AnswerMarkdown } from './AnswerMarkdown';
 import { CONFIG } from '../config';
 
 export function InfoPanel() {
-  const { state, currentProduct, transition, qaHistory, currentAnswer } =
-    useAppStore();
+  const { state, currentProduct, transition, qaHistory } = useAppStore();
 
   const isOpen =
     state === 'InfoPanelOpen' ||
@@ -207,14 +207,23 @@ export function InfoPanel() {
           {qaHistory.length > 0 && (
             <Section title="问答记录">
               <div className="space-y-3">
-                {qaHistory.map((qa, i) => (
-                  <div key={i} className="space-y-1">
-                    <p className="text-cyan-300/90 text-xs">Q · {qa.q}</p>
-                    <p className="text-white/85 text-sm whitespace-pre-line">
-                      {qa.a}
-                    </p>
-                  </div>
-                ))}
+                {qaHistory.map((qa, i) => {
+                  const isLatest =
+                    i === qaHistory.length - 1 && state === 'AnswerDisplayed';
+                  return (
+                    <div
+                      key={i}
+                      className={`space-y-1.5 rounded-xl p-2.5 -m-2 transition-colors ${
+                        isLatest
+                          ? 'bg-gradient-to-br from-cyan-400/10 to-violet-600/10 ring-1 ring-cyan-400/25'
+                          : ''
+                      }`}
+                    >
+                      <p className="text-cyan-300/90 text-xs">Q · {qa.q}</p>
+                      <AnswerMarkdown text={qa.a} className="text-sm" />
+                    </div>
+                  );
+                })}
               </div>
             </Section>
           )}
@@ -223,20 +232,6 @@ export function InfoPanel() {
             <div className="flex items-center gap-2 text-white/60 text-sm">
               <div className="w-4 h-4 border-2 border-cyan-300 border-t-transparent rounded-full animate-spin" />
               正在处理语音…
-            </div>
-          )}
-
-          {state === 'AnswerDisplayed' && currentAnswer && (
-            <div
-              className="p-3 rounded-xl border border-cyan-400/25"
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(0,255,225,0.08), rgba(124,58,237,0.1))',
-              }}
-            >
-              <p className="text-white/95 text-sm whitespace-pre-line">
-                {currentAnswer}
-              </p>
             </div>
           )}
         </div>

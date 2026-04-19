@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 from ..models.knowledge import ProductKnowledge, product_json_to_knowledge
-from ..config import DATA_DIR
+from ..config import KB_CUSTOM_PRODUCTS_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +43,8 @@ class KnowledgeStore:
         return loaded
 
     def load_all_from_dir(self, directory: Optional[Path] = None) -> list[str]:
-        """Scan a directory for *.json files and load all."""
-        d = directory or DATA_DIR
+        """加载定制商品 JSON（与 knowledge-base/products/custom 一致），供关键字检索兜底。"""
+        d = directory or KB_CUSTOM_PRODUCTS_DIR
         if not d.exists():
             logger.warning("Knowledge directory %s does not exist", d)
             return []
