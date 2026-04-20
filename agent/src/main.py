@@ -102,7 +102,7 @@ async def ws_route(ws: WebSocket):
 
 def start():
     uvicorn.run(
-        "agent.main:app",
+        "src.main:app",
         host=config.HOST,
         port=config.PORT,
         reload=True,

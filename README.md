@@ -48,7 +48,7 @@ flowchart LR
 | 路径 | 职责 |
 | --- | --- |
 | **`web/`** | Vite + React：`@xenova/transformers` 浏览器侧 YOLO、检测结果 AR 叠加、`InfoPanel` 商品卡片、语音录制、`AnswerMarkdown` 渲染模型答复。`/api`、`/ws` 由开发服务器代理到后端。 |
-| **`agent/`** | FastAPI：`AgentManager`（多会话）、`RichKnowledgeBase`（结构化 JSON）、Chroma **RAG**、`llm_provider`、`stt_provider`、`web_search`。入口 `agent-server`，配置见 `agent/.env`。 |
+| **`agent/`** | FastAPI：`AgentManager`（多会话）、`RichKnowledgeBase`（结构化 JSON）、Chroma **RAG**、`llm_provider`、`stt_provider`、`web_search`。入口 `agent`，配置见 `agent/.env`。 |
 | **`data/`** | **唯一知识源**：`knowledge-base/`（标签映射、类目、定制商品 JSON）；**运行时生成**：`data/.chroma/`（向量库）、`data/.rag_source_fingerprint`（启动 ingest 指纹），二者已写入 `data/.gitignore`。 |
 | **`models/`** | YOLO ONNX 权重本地目录（构建时拷贝进 `web/dist`）。 |
 | **`docs/`** | `prd.md` 等产品与交互说明。 |
@@ -73,7 +73,7 @@ Live-Everything/
 ├── agent/
 │   ├── pyproject.toml
 │   ├── .env.example          # 复制为 .env
-│   └── src/agent/
+│   └── src/
 │       ├── main.py           # FastAPI lifespan：加载 KB、按需 RAG ingest、Whisper 预热
 │       ├── config.py
 │       ├── api/
@@ -97,25 +97,45 @@ Live-Everything/
 
 ### 安装
 
-**Conda**
+**方式 1：pip + venv**
+
+Windows PowerShell：
 
 ```powershell
-conda activate ...
 cd agent
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install -U pip
 pip install -e .
 ```
 
-**或独立 venv（Python 3.9–3.13 均可，需满足 pyproject）**
+macOS / Linux：
 
-```powershell
+```bash
 cd agent
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
 pip install -e .
 ```
 
-首次运行会按需下载 Whisper 权重（体量因模型档位而异）。
+**方式 2：uv**
+
+Windows PowerShell / macOS / Linux：
+
+```bash
+cd agent
+uv sync
+```
+
+启动：
+
+```bash
+cd agent
+uv run agent
+```
+
+依赖里已包含 `openai-whisper` 和 `imageio-ffmpeg`。首次启动时 Whisper 的 `base` 模型会自动下载到用户目录，体积约 150 MB。
 
 ### 配置
 
@@ -128,7 +148,7 @@ Copy-Item .env.example .env
 ### 启动
 
 ```powershell
-agent-server
+uv run agent
 ```
 
 默认：`http://0.0.0.0:8000`。自检：`curl http://localhost:8000/api/health`。
@@ -168,7 +188,7 @@ npm run dev
 
 | 现象 | 处理 |
 | --- | --- |
-| `语音服务未连接` / `ECONNREFUSED` | 确认 `agent-server` 已监听 8000，且 Vite 代理未被改端口。 |
+| `语音服务未连接` / `ECONNREFUSED` | 确认 `agent` 已监听 8000，且 Vite 代理未被改端口。 |
 | `pip install -e .` 报 Python 版本不符 | 使用 **≥ 3.9**，与 `agent/pyproject.toml` 中 `requires-python` 对齐。 |
 | Whisper 报错找不到 ffmpeg | `pip install imageio-ffmpeg`（一般已在依赖里）。 |
 | 麦克风采不到音 | 使用 localhost；检查浏览器站点权限中的麦克风。 |
